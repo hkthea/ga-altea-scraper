@@ -23,7 +23,7 @@ const ENVIRONMENT = {
     imap_password:process.env.IMAP_PASSWORD,
     imap_port:process.env.IMAP_PORT,
     imap_use_tls:process.env.IMAP_TLS,
-    instance_puppet:process.env.INSTACE_PUPPET
+    instance_puppet:process.env.INSTANCE_PUPPET
 }
 
 module.exports = ENVIRONMENT;

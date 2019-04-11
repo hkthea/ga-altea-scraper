@@ -1,5 +1,6 @@
 import launchPuppet from '../service/puppetScrapper';
 import puppeteer  from "puppeteer";
+// import express from 'express';
 
 const SESSION_LIST=[];
 var TOTAL_SESSION_LIST=0;
@@ -85,51 +86,49 @@ function handleRequest(req, callback) {
     })
 }
 
+// const app= express()
+// const router=app.Router();
+var router = require('express').Router()
+
+router.post('/searchAvail',async (req,res)=>{
+    let resp = await handleRequest(req, async(req, session)=>{
+        let sdata={error:0, data:{}, total:{}, message:''};
+        try {
+            console.log(req.body);                    
+            sdata.data =await session.commander.searchAvail(req.body);                    
+            sdata.total=getTotal()                    
+            console.log(sdata);                    
+        } catch (error) {
+            sdata.error=500;
+            sdata.message=error.message
+            sdata.total=getTotal()
+        }
+        pushSession(session)
+        return sdata;
+    })
+    res.json(resp);
+})
+
+router.post('/executeCmd',async(req, res)=>{
+    let resp = await handleRequest(req, async(req, session)=>{
+        let sdata={error:0, data:{}, total:{}, message:''};
+        try {
+            console.log(req.body);                    
+            sdata.data =await session.commander.execute(req.body);                    
+            sdata.total=getTotal()                    
+            console.log(sdata);                    
+        } catch (error) {
+            sdata.error=500;
+            sdata.message=error.message,
+            sdata.total=getTotal()
+        }
+        pushSession(session)
+        return sdata;
+    })
+    res.json(resp);
+})
+
 module.exports = {
     core:alteaCore,
-    // sessionList:()=>{return SESSION_LIST},
-    controller:{
-        searchAvail:async (req,res)=>{
-            let resp = await handleRequest(req, async(req, session)=>{
-                let sdata={error:0, data:{}, total:{}, message:''};
-                try {
-                    console.log(req.body);                    
-                    sdata.data =await session.commander.searchAvail(req.body);                    
-                    sdata.total=getTotal()                    
-                    console.log(sdata);                    
-                } catch (error) {
-                    sdata.error=500;
-                    sdata.message=error.message
-                    sdata.total=getTotal()
-                }
-                pushSession(session)
-                return sdata;
-            })
-            // res.
-            res.json(resp);
-        },
-        booking:async(req, res)=>{
-            // let session = 
-
-        },
-        execute:async(req, res)=>{
-            let resp = await handleRequest(req, async(req, session)=>{
-                let sdata={error:0, data:{}, total:{}, message:''};
-                try {
-                    console.log(req.body);                    
-                    sdata.data =await session.commander.execute(req.body);                    
-                    sdata.total=getTotal()                    
-                    console.log(sdata);                    
-                } catch (error) {
-                    sdata.error=500;
-                    sdata.message=error.message,
-                    sdata.total=getTotal()
-                }
-                pushSession(session)
-                return sdata;
-            })
-            // res.
-            res.json(resp);
-        }
-    }
+    router:router
 }
