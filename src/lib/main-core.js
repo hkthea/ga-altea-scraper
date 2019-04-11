@@ -11,7 +11,7 @@ const alteaCore = async(instanceNum)=>{
         // userDataDir:'../puppeteer/udata',
         // args:['--incognito']
     })
-    console.log('browser',browser);
+    console.log('new browser');
    
     for (let i = 0; i < instanceNum; i++) {
         let page = await browser.newPage()
@@ -23,22 +23,22 @@ const alteaCore = async(instanceNum)=>{
 
     async function _createService(page, prefix){
         let service = await launchPuppet(page, prefix)
-        console.log(service.prefix, service);
+        console.log(service.prefix);
         
         return new Promise((resolve, rejects)=>{
             service.listener.on('cookieChanged',(cookiejar=>{
-                console.log(service.prefix, 'ON Cookie Changed Event',cookiejar);        
+                console.log(service.prefix, 'ON Cookie Changed Event');        
             }))
             service.listener.on('onReady',(()=>{
-                console.log(service.prefix, 'ON Ready Event', service, service.isReady());        
+                console.log(service.prefix, 'ON Ready Event', service.isReady());        
                 resolve(true)
             }))
             service.listener.on('onNewSession',(s, sl, cookiejar)=>{
-                console.log(service.prefix, 'On New Session', s, sl, cookiejar);        
+                console.log(service.prefix, 'On New Session');        
                 // let cmd=new commander();
                 SESSION_LIST.push({commander:s, cookiejar:cookiejar, prefix:service.prefix, service:service})
                 TOTAL_SESSION_LIST = SESSION_LIST.length
-                console.log('MAIN_CORE SESSIONS',SESSION_LIST, service.isReady());
+                console.log('MAIN_CORE SESSIONS',SESSION_LIST.length, service.isReady());
                 // resolve(true)
             })
             service.listener.on('onLocked',(()=>{
@@ -110,7 +110,7 @@ module.exports = {
         },
         booking:async(req, res)=>{
             // let session = 
-            
+
         },
         execute:async(req, res)=>{
             let resp = await handleRequest(req, async(req, session)=>{

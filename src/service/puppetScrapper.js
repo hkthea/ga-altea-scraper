@@ -39,10 +39,10 @@ const launchPuppet=async(PAGE, PREFIX='ALTEA')=> {
         console.log(PREFIX, 'LAUNCHED');
         await _loadCookies()
 
-        console.log(PREFIX,'set Cookies',COOKIEJAR);        
+        console.log(PREFIX,'set Cookies',COOKIEJAR.length);        
         await PAGE.goto('about:blank');    
         if(COOKIEJAR)await PAGE.setCookie(...COOKIEJAR)
-        console.log(PREFIX,'Cookies From PAGE ',await PAGE.cookies());
+        console.log(PREFIX,'Cookies From PAGE ',(await PAGE.cookies()).length);
         await PAGE.goto(URI);            
         // await PAGE.waitFor(15000);
         await PAGE.waitForSelector('input[name=USER_ALIAS]');
@@ -91,13 +91,13 @@ const launchPuppet=async(PAGE, PREFIX='ALTEA')=> {
             try {
                 
                 let logoutSelector = await PAGE.waitForSelector('a#eusermanagement_logout_logo_logout_id', {timeout:120000})
-                console.log(PREFIX, logoutSelector, 'LOGOUT SELECTOR');
+                console.log(PREFIX, 'LOGOUT SELECTOR');
                 
                 let selectors = ['a#e3newCrypticSessionLink', 'a#e2newCrypticSessionLink','a#e1newCrypticSessionLink','a#e4newCrypticSessionLink','a#e5newCrypticSessionLink'];
                 for (let i = 0; i < selectors.length; i++) {
                     const selector = selectors[i];
                     let found = await PAGE.$(selector);
-                    console.log(PREFIX,found, 'Found selector '+selector);
+                    console.log(PREFIX, 'Found selector '+selector);
                     
                     if(found)
                     {
@@ -107,7 +107,7 @@ const launchPuppet=async(PAGE, PREFIX='ALTEA')=> {
                     }
                 }
             } catch (error) {
-                console.log('ERROR on TAP NEW SESSION ',error);                                
+                console.log('ERROR on TAP NEW SESSION ',error.message);                                
             }
         }
         LOCKED = false;
@@ -129,7 +129,7 @@ const launchPuppet=async(PAGE, PREFIX='ALTEA')=> {
             } 
             return true;
         } catch (error) {
-            console.log(PREFIX,error);            
+            console.log(PREFIX, 'ERROR = ',error.message);            
             return false;
         }
     }
@@ -180,7 +180,7 @@ const launchPuppet=async(PAGE, PREFIX='ALTEA')=> {
     }
 
     async function _saveCookies(cookie) {
-        console.log(PREFIX,'Save COOKIE ',cookie);        
+        // console.log(PREFIX,'Save COOKIE ',cookie);        
         await COOKIE_CACHE.setKey('cookies:'+PREFIX,JSON.stringify(cookie),24*60*60)
         EVENTS.emit('cookieChanged',COOKIEJAR)
     }
@@ -189,7 +189,7 @@ const launchPuppet=async(PAGE, PREFIX='ALTEA')=> {
     {
         let cjar = JSON.parse(await COOKIE_CACHE.getKey('cookies:'+PREFIX))
         COOKIEJAR = cjar?cjar:[] 
-        console.log(PREFIX,'Load Cookie', COOKIEJAR);        
+        console.log(PREFIX,'Load Cookie Total ', COOKIEJAR.length);        
         return COOKIEJAR
     }
 
@@ -202,22 +202,22 @@ const launchPuppet=async(PAGE, PREFIX='ALTEA')=> {
         }
         else if((url.indexOf('ga')>=0)&&(url.indexOf('.js')>=0))
         {
-            console.log(PREFIX,url, resp.headers());            
+            console.log(PREFIX,url);            
             let cookies = await PAGE.cookies();
             _cekCookies(cookies);
-            console.log(PREFIX,cookies);
+            // console.log(PREFIX,cookies);
         }
         else if((url.indexOf(LNS)>=0)||(url.indexOf(LCP)>=0))
         {
             let content = await resp.text()
             let session = _processSession(content)
 
-            console.log(PREFIX,'New Session ', session);            
+            console.log(PREFIX,'New Session ');            
             let commander=new alteaCommander(COOKIEJAR, session);
             // session.commander=commander;
             SESSION_LIST.push(commander)       
             EVENTS.emit('onNewSession', commander, SESSION_LIST, COOKIEJAR)            
-            console.log(PREFIX,SESSION_LIST);
+            console.log(PREFIX,'New Session Total '+ SESSION_LIST.length);
             
         }
         else if(url.indexOf('app_ard/apf/do/home.usermanagement_logout/lockSession')>=0)
