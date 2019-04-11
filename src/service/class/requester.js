@@ -36,7 +36,7 @@ class Requester
         return strCookie.join('; ');
     }
 
-    async post(page, data, header=false, type='application/x-www-form-urlencoded')
+    async post(page, data, header={}, type='application/x-www-form-urlencoded')
     {
         if(!this.cookie_ready)await this.initCookies()
         var reqCookie=this.getStringCookie();
@@ -60,7 +60,7 @@ class Requester
         };
     }
 
-    async get(page, header=false)
+    async get(page, header={})
     {
         if(!this.cookie_ready)await this.initCookies()
         
@@ -88,7 +88,7 @@ class Requester
         };
     }
 
-    async head(page, header=false)
+    async head(page, header={})
     {
         if(!this.cookie_ready)await this.initCookies()
         var reqCookie=this.getStringCookie();

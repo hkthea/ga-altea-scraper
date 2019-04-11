@@ -1,6 +1,5 @@
 import launchPuppet from '../service/puppetScrapper';
 import puppeteer  from "puppeteer";
-import { callbackify } from 'util';
 
 const SESSION_LIST=[];
 var TOTAL_SESSION_LIST=0;
@@ -97,7 +96,7 @@ module.exports = {
                 let sdata;
                 try {
                     console.log(req.body);                    
-                    sdata =await session.commander.searchAvail();                    
+                    sdata =await session.commander.searchAvail(req.body);                    
                     sdata.total=getTotal()
                     console.log(sdata);                    
                 } catch (error) {

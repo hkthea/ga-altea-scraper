@@ -1,19 +1,48 @@
-import Requester from "./requester";
+import flightCommander from "./class/flightCommander";
+import moment from 'moment';
 
-class AlteaCommander extends Requester
+class AlteaCommander extends flightCommander
 {
-    constructor(cookieJar, alteaSession)
+    constructor(cookieJar, session)
     {
-        super('https://tc34.resdesktop.altea.amadeus.com/');
-        this.initCookies(cookieJar);
-        this.alteaSession = alteaSession;
+        super('https://tc34.resdesktop.altea.amadeus.com/', cookieJar, session);
+        this.page='cryptic/apfplus/modules/cryptic/cryptic?SITE=AGAPAIDL&LANGUAGE=GB&OCTX=ARDW_PROD_WBP,ARDW_ESSENTIAL';
+    }
+
+    createParams(cmd)
+    {
+        let model = this.session.model;
+        return {
+            jSessionId:model.jSessionId,
+            contextId: model.dcxid,
+            userId: model.userId,
+            organization: model.organization,
+            officeId: model.officeId,
+            gds: 'AMADEUS',
+            tasks:[
+                {
+                    type:"CRY",
+                    command:{
+                        command:cmd,
+                        prohibitedList:model.prohibitedList
+                    }
+                }
+            ]
+        }
+    }
+
+    changeDateFormat(date)
+    {
+        return moment(date, 'DD-MMM-YYYY').format('DDMMM');
     }
     
     async searchAvail(data){
-        console.log('Search AVAIL DATA ',this.alteaSession, data);
-        return new Promise((resolve)=>{
-            setTimeout(()=>resolve({error:0, data:{}}),5000 )   
-        })
+        console.log('Req Search Avail',data);
+        
+        let depDate = this.changeDateFormat(data.departure)
+        let cmd =this.createParams('AN'+depDate+data.from.code+data.to.code)
+        let params = 'data='+encodeURI(JSON.stringify(cmd))
+        return  (await this.post(this.page, params)).html;
     }
 
     async fareRetrieve(data){
