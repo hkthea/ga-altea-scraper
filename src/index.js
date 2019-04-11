@@ -1,8 +1,8 @@
+import express from 'express';
 import {port} from './const/env';
 import bodyParser from 'body-parser';
 import { core, controller } from './lib/main-core'
 
-require('express');
 const server = express();
 
 let k=core(2, server);

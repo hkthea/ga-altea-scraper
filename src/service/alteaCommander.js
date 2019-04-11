@@ -59,8 +59,8 @@ class AlteaCommander extends flightCommander
         
     }
 
-    async execute(cmd){
-        let cmd=this.createParams(cmd.command)
+    async execute(data){
+        let cmd=this.createParams(data.command)
         let params='data='+encodeURI(cmd);
         let resp =(await this.post(this.page, params)).html;
         return JSON.parse(resp);

@@ -100,7 +100,7 @@ module.exports = {
                 } catch (error) {
                     sdata.error=500;
                     sdata.message=error.message
-                    sdata.total:getTotal()
+                    sdata.total=getTotal()
                 }
                 pushSession(session)
                 return sdata;
@@ -121,8 +121,8 @@ module.exports = {
                     console.log(sdata);                    
                 } catch (error) {
                     sdata.error=500;
-                    sdata.message=error.message
-                    sdata.total:getTotal()
+                    sdata.message=error.message,
+                    sdata.total=getTotal()
                 }
                 pushSession(session)
                 return sdata;
