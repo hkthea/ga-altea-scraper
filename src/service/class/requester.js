@@ -48,11 +48,7 @@ class Requester
             body:data,
             headers:headers,            
         }
-        // if(reqCookie!='')options.headers.cookie=reqCookie;
-        // const resp = await http.request(this.baseUri+page, options);
-        // console.log(options, this.baseUri+page);
         const resp= await fetch(this.baseUri+page,options);
-        // console.log(resp);
         return {
             html:await resp.text(),
             headers:resp.headers,
@@ -65,7 +61,6 @@ class Requester
         if(!this.cookie_ready)await this.initCookies()
         
         var reqCookie=this.getStringCookie();
-        // return ;
         let hs={...this.defHeader, ...header};
         if(reqCookie!='')hs.cookie=reqCookie;
         
@@ -74,11 +69,7 @@ class Requester
         let options={
             method:'GET',
             headers:headers,            
-        }
-        // if(reqCookie!='')options.headers.cookie=reqCookie;
-        // const resp = await http.request(this.baseUri+page, options);
-        // console.log(options, this.baseUri+page);
-        
+        }         
         const resp= await fetch(this.baseUri+page,options);
         await this.parseCookies(resp.headers);    
         return {
@@ -101,7 +92,6 @@ class Requester
         }
         
         const resp= await fetch(this.baseUri+page,options);
-        // console.log(resp.headers);
         return {
             html:await resp.text(),
             headers:resp.headers,

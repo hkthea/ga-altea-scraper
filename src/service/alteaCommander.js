@@ -1,5 +1,6 @@
 import flightCommander from "./class/flightCommander";
 import moment from 'moment';
+import {searchAvailParser} from './parser/alteaCommander';
 
 class AlteaCommander extends flightCommander
 {
@@ -35,16 +36,46 @@ class AlteaCommander extends flightCommander
     {
         return moment(date, 'DD-MMM-YYYY').format('DDMMM');
     }
+
+    async cmdAN(data, i=0, result=[])
+    {
+        if(i>10)return result;
+        let depDate = this.changeDateFormat(data.departure)
+        let str=(i==0)?'AN'+depDate+data.from.code+data.to.code:'MD';
+        if(!data.oneway)
+        {
+            let retDate = this.changeDateFormat(data.return)
+            if(i==0)str+='*'+retDate
+        }
+        let cmd = this.createParams(str)
+        
+        console.log('Req Search Avail '+i,str);
+        
+        let params = 'data='+encodeURI(JSON.stringify(cmd))
+        
+        let resp = (await this.post(this.page, params)).html;
+        
+        let gds = JSON.parse(resp);
+        
+        let gdsResp=gds.model.output.crypticResponse.response;
+        console.log(str, gdsResp);        
+        result.push(gdsResp)
+        if(gdsResp.toUpperCase().indexOf('NO MORE LATER')>=0)
+        {
+            return result;
+        }
+        i++;
+        return await this.cmdAN(data, i, result)
+    }
     
     async searchAvail(data){
-        
-        let depDate = this.changeDateFormat(data.departure)
-        let cmd =this.createParams('AN'+depDate+data.from.code+data.to.code)
-        console.log('Req Search Avail',cmd);
-        let params = 'data='+encodeURI(JSON.stringify(cmd))
-        console.log(params);
-        let resp = (await this.post(this.page, params)).html;
-        return  JSON.parse(resp)
+        let  gdsResp= await this.cmdAN(data);
+        return this.parseSearchAvail(gdsResp)        
+    }
+
+    parseSearchAvail(resp) {
+        let result=searchAvailParser({data:resp});
+        return result;
     }
 
     async fareRetrieve(data){

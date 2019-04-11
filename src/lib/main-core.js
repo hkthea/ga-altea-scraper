@@ -3,6 +3,7 @@ import puppeteer  from "puppeteer";
 // import express from 'express';
 
 const SESSION_LIST=[];
+const SESSION_LIST_REGISTER=[];
 var TOTAL_SESSION_LIST=0;
 const alteaCore = async(instanceNum)=>{
 
@@ -37,7 +38,9 @@ const alteaCore = async(instanceNum)=>{
             service.listener.on('onNewSession',(s, sl, cookiejar)=>{
                 console.log(service.prefix, 'On New Session');        
                 // let cmd=new commander();
-                SESSION_LIST.push({commander:s, cookiejar:cookiejar, prefix:service.prefix, service:service})
+                let sx={commander:s, cookiejar:cookiejar, prefix:service.prefix, service:service};
+                SESSION_LIST.push(sx)
+                SESSION_LIST_REGISTER.push(sx)
                 TOTAL_SESSION_LIST = SESSION_LIST.length
                 console.log('MAIN_CORE SESSIONS',SESSION_LIST.length, service.isReady());
                 // resolve(true)
@@ -61,7 +64,7 @@ function pushSession(session) {
 }
 
 function getTotal() {
-    return {total:TOTAL_SESSION_LIST, active:SESSION_LIST.length}
+    return {total:SESSION_LIST_REGISTER.length, active:SESSION_LIST.length}
 }
 
 const SESSION_NOT_FOUND_ERROR = ()=>{

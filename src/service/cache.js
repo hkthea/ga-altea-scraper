@@ -30,7 +30,7 @@ function createCache(db=0) {
     const readKeys=(keys)=>{
         return new Promise((resolve, rejects)=>{
                 redisClient.keys(keys+'*', function(error, reply){
-                console.log(error, reply ,'readKeys keys Cmd  '+db);
+                console.log(error, 'readKeys keys Cmd  '+db);
                 if(error)
                 {
                     rejects(error);
@@ -46,7 +46,7 @@ function createCache(db=0) {
     const getKey = (key)=>{
         return new Promise((resolve, rejects)=>{
             redisClient.get(key, function(error, reply){
-                console.log(error, reply ,'getkey get Cmd  '+db);
+                console.log(error, 'getkey get Cmd  '+db);
                 if(error)
                 {
                     rejects(error);
