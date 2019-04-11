@@ -90,17 +90,17 @@ module.exports = {
     // sessionList:()=>{return SESSION_LIST},
     controller:{
         searchAvail:async (req,res)=>{
-            console.log(req.body, req);
-            
             let resp = await handleRequest(req, async(req, session)=>{
-                let sdata;
+                let sdata={error:0, data:{}, total:{}, message:''};
                 try {
                     console.log(req.body);                    
-                    sdata =await session.commander.searchAvail(req.body);                    
-                    sdata.total=getTotal()
+                    sdata.data =await session.commander.execute(req.body);                    
+                    sdata.total=getTotal()                    
                     console.log(sdata);                    
                 } catch (error) {
-                    sdata = {error:500, message:error.message, total:getTotal()}
+                    sdata.error=500;
+                    sdata.message=error.message
+                    sdata.total:getTotal()
                 }
                 pushSession(session)
                 return sdata;
@@ -110,6 +110,25 @@ module.exports = {
         },
         booking:async(req, res)=>{
             // let session = 
+        },
+        execute:async(req, res)=>{
+            let resp = await handleRequest(req, async(req, session)=>{
+                let sdata={error:0, data:{}, total:{}, message:''};
+                try {
+                    console.log(req.body);                    
+                    sdata.data =await session.commander.execute(req.body);                    
+                    sdata.total=getTotal()                    
+                    console.log(sdata);                    
+                } catch (error) {
+                    sdata.error=500;
+                    sdata.message=error.message
+                    sdata.total:getTotal()
+                }
+                pushSession(session)
+                return sdata;
+            })
+            // res.
+            res.json(resp);
         }
     }
 }

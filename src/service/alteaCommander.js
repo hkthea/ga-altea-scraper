@@ -42,7 +42,9 @@ class AlteaCommander extends flightCommander
         let depDate = this.changeDateFormat(data.departure)
         let cmd =this.createParams('AN'+depDate+data.from.code+data.to.code)
         let params = 'data='+encodeURI(JSON.stringify(cmd))
-        return  (await this.post(this.page, params)).html;
+        let resp = (await this.post(this.page, params)).html;
+        
+        return  JSON.parse(resp)
     }
 
     async fareRetrieve(data){
@@ -55,6 +57,13 @@ class AlteaCommander extends flightCommander
 
     async issued(data){
         
+    }
+
+    async execute(cmd){
+        let cmd=this.createParams(cmd.command)
+        let params='data='+encodeURI(cmd);
+        let resp =(await this.post(this.page, params)).html;
+        return JSON.parse(resp);
     }
 }
 
