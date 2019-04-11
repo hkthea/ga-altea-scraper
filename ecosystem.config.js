@@ -1,7 +1,7 @@
 module.exports = {
     apps : [{
       name   : "GAlteaEngine",
-      script : "./src/index.js",
+      script : "./dist/index.js",
       watch  : true,
   
     }]
