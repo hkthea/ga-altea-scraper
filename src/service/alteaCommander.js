@@ -48,7 +48,7 @@ class AlteaCommander extends flightCommander
     }
 
     async fareRetrieve(data){
-        
+
     }
 
     async booking(data){
@@ -61,7 +61,10 @@ class AlteaCommander extends flightCommander
 
     async execute(data){
         let cmd=this.createParams(data.command)
+        console.log(cmd);    
         let params='data='+encodeURI(cmd);
+        console.log(params);
+        
         let resp =(await this.post(this.page, params)).html;
         return JSON.parse(resp);
     }
