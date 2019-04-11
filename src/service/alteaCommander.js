@@ -44,7 +44,6 @@ class AlteaCommander extends flightCommander
         let params = 'data='+encodeURI(JSON.stringify(cmd))
         console.log(params);
         let resp = (await this.post(this.page, params)).html;
-        
         return  JSON.parse(resp)
     }
 
