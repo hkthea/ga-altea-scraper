@@ -48,7 +48,6 @@ class AlteaCommander extends flightCommander
     }
 
     async fareRetrieve(data){
-
     }
 
     async booking(data){
