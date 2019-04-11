@@ -94,7 +94,7 @@ module.exports = {
                 let sdata={error:0, data:{}, total:{}, message:''};
                 try {
                     console.log(req.body);                    
-                    sdata.data =await session.commander.execute(req.body);                    
+                    sdata.data =await session.commander.searchAvail(req.body);                    
                     sdata.total=getTotal()                    
                     console.log(sdata);                    
                 } catch (error) {
