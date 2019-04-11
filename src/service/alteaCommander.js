@@ -37,11 +37,12 @@ class AlteaCommander extends flightCommander
     }
     
     async searchAvail(data){
-        console.log('Req Search Avail',data);
         
         let depDate = this.changeDateFormat(data.departure)
         let cmd =this.createParams('AN'+depDate+data.from.code+data.to.code)
+        console.log('Req Search Avail',cmd);
         let params = 'data='+encodeURI(JSON.stringify(cmd))
+        console.log(params);
         let resp = (await this.post(this.page, params)).html;
         
         return  JSON.parse(resp)
