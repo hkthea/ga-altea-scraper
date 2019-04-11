@@ -3,7 +3,7 @@ module.exports = {
       name   : "GAlteaEngine",
       script : "npm",
       args   : "start",
-      watch  : true,
+      watch  : false,
     }]
   }
   
