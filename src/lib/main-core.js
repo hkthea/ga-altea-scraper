@@ -72,15 +72,25 @@ const SESSION_NOT_FOUND_ERROR = ()=>{
 }
 
 function handleRequest(req, callback) {
-    return new Promise((resolve, rejects)=>{
+    return new Promise(async (resolve)=>{
         let session=popSession()
+        console.log(req.body);                    
         if(session)
         {
+            let sdata={error:0, data:{}, total:{}, message:''};
             try {
-                resolve(callback(req, session));                
+                sdata.data =await callback(req, session);                    
+                sdata.total=getTotal()                    
             } catch (error) {
-                rejects(error)                
+                sdata.error=500;
+                sdata.stack=error.stack
+                sdata.name=error.name
+                sdata.message=error.message
+                sdata.total=getTotal()
             }
+            resolve(sdata)
+            pushSession(session)
+            return sdata;            
         }
         else
         {
@@ -95,38 +105,21 @@ var router = require('express').Router()
 
 router.post('/searchAvail',async (req,res)=>{
     let resp = await handleRequest(req, async(req, session)=>{
-        let sdata={error:0, data:{}, total:{}, message:''};
-        try {
-            console.log(req.body);                    
-            sdata.data =await session.commander.searchAvail(req.body);                    
-            sdata.total=getTotal()                    
-            console.log(sdata);                    
-        } catch (error) {
-            sdata.error=500;
-            sdata.message=error.message
-            sdata.total=getTotal()
-        }
-        pushSession(session)
-        return sdata;
+        return await session.commander.searchAvail(req.body)
+    })
+    res.json(resp);
+})
+
+router.post('/fareRetrieve',async (req,res)=>{
+    let resp = await handleRequest(req, async(req, session)=>{
+        return await session.commander.fareRetrieve(req.body)
     })
     res.json(resp);
 })
 
 router.post('/executeCmd',async(req, res)=>{
     let resp = await handleRequest(req, async(req, session)=>{
-        let sdata={error:0, data:{}, total:{}, message:''};
-        try {
-            console.log(req.body);                    
-            sdata.data =await session.commander.execute(req.body);                    
-            sdata.total=getTotal()                    
-            console.log(sdata);                    
-        } catch (error) {
-            sdata.error=500;
-            sdata.message=error.message,
-            sdata.total=getTotal()
-        }
-        pushSession(session)
-        return sdata;
+        return await session.commander.execute(req.body);                           
     })
     res.json(resp);
 })
