@@ -182,7 +182,7 @@ function parseFareRetrieve(data){
 
 }
 
-const failedResp=['INVALID', 'CHECK', 'NOT AVAILABLE', 'WAITLIST CLOSED']
+const failedResp=['INVALID', 'CHECK', 'NOT AVAILABLE', 'WAITLIST CLOSED', 'NOT ALLOWED']
 
 function validateCmd(resp, cmd) {
     for (let ii = 0; ii < failedResp.length; ii++) {

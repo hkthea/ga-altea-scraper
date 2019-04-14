@@ -4,16 +4,14 @@ import bodyParser from 'body-parser';
 import { core, router } from './lib/main-core'
 
 const server = express();
-console.log(instance_puppet);
+console.log(instance_puppet );
+console.log('test coba');
 
-let k=core(instance_puppet);
+
+core(instance_puppet);
 
 server.listen(port, '127.0.0.1', ()=>{
     console.log("server listened");
-})
-
-server.use('/api/v1',function(req,res,next){
-    next();
 })
 
 server.use(bodyParser.json()); // for parsing application/json

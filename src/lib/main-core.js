@@ -9,7 +9,7 @@ const alteaCore = async(instanceNum)=>{
 
     
     let browser = await puppeteer.launch({
-        // headless:true,
+        // headless:false,
         // userDataDir:'../puppeteer/udata',
         // args:['--incognito']
     })
@@ -113,6 +113,13 @@ router.post('/searchAvail',async (req,res)=>{
 router.post('/fareRetrieve',async (req,res)=>{
     let resp = await handleRequest(req, async(req, session)=>{
         return await session.commander.fareRetrieve(req.body)
+    })
+    res.json(resp);
+})
+
+router.post('/booking',async (req,res)=>{
+    let resp = await handleRequest(req, async(req, session)=>{
+        return await session.commander.booking(req.body)
     })
     res.json(resp);
 })

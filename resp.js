@@ -6,7 +6,7 @@ arr.splice(0,2)
 arr.splice(arr.length -1,1)
 let head=arr[0]
 arr.splice(0,1)
-console.log(arr);
+// console.log(arr);
 
 let result=[];
 for (let i = 0; i < arr.length; i++) {
@@ -44,4 +44,4 @@ let response = {
     log:result
 }
 
-console.log(response);
+// console.log(response);

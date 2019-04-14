@@ -98,7 +98,7 @@ class AlteaCommander extends flightCommander
         return resp;
     }
 
-    async fareRetrieve(data){        
+    async fareRetrieve(data, ignored=true){        
         let totPax=data.model.adult+data.model.child;
         let oke = await this.addFlight(data.departure, totPax)
         if(oke && !data.model.oneway)
@@ -109,22 +109,63 @@ class AlteaCommander extends flightCommander
         if(oke)
         {
             let res = await this.execute({command:'FXA'})
-            let ig = await this.execute({command:'IG'})
-            console.log(res, ig);            
+            if(ignored) await this.execute({command:'IG'})
+            console.log(res);            
             return fareRetrieveParser(res)
         }
         return {}
         // let gdsResp=await 
     }
 
+    parseName(name)
+    {
+        let t=name.split(' ')
+        let lname=t[t.length - 1]
+        t.splice(t.length - 1, 1)
+        return lname+'/'+t.join('');
+    }
+
+    changeBoD(date){
+        return (moment(date,'DD-MMM-YYYY').format('DDMMMYY')).toUpperCase()
+    }
+
     async addBooking(data)
     {
-
+        data.pax.adult.forEach(async (adult) => {
+            let str =( 'NM1'+this.parseName(adult.firstname)+adult.title).toUpperCase()
+            if(adult.infant)
+            {
+                str+='(INF/'+(this.parseName(adult.infant.firstname)).replaceAll('/','')+'/'+this.changeBoD(adult.infant.dob)+')'
+            }
+            // let resp = await this.execute({command:str});
+            console.log(str, adult);            
+        });
+        data.pax.child.forEach(async(child) => {
+            let str =( 'NM1'+this.parseName(child.firstname)+child.title).toUpperCase()+'(CHD/'+this.changeBoD(child.dob)+')'            
+            // let resp = await this.execute({command:str});
+            console.log(str, child);
+        });
     }
     
 
     async booking(data){
+        let pdata=this.processInfant(data.data);
+        console.log(pdata);        
+        await this.addBooking(pdata)
+        return pdata;
+        let fr = await this.fareRetrieve(data.airfare, false)   
+    }
 
+    processInfant(paxData)
+    {
+        if(paxData.pax.infant.length>0)
+        {
+            for (let i = 0; i < paxData.pax.infant.length; i++) {
+                const inf = paxData.pax.infant[i];
+                paxData.pax.adult[i].infant = inf
+            }
+        }
+        return paxData;
     }
 
     async issued(data){
