@@ -1,6 +1,6 @@
 import flightCommander from "./class/flightCommander";
 import moment from 'moment';
-import {searchAvailParser, fareRetrieveParser, validateResp} from './parser/alteaCommander';
+import {searchAvailParser, fareRetrieveParser, parseFareRetrieveFQQ, validateResp, parseBookCode, parseRetrieve } from './parser/alteaCommander';
 
 String.prototype.replaceAll = function(search, replacement) {
     var target = this;
@@ -75,11 +75,11 @@ class AlteaCommander extends flightCommander
     
     async searchAvail(data){
         let  gdsResp= await this.cmdAN(data);
-        return this.parseSearchAvail(gdsResp)        
+        return this.parseSearchAvail(gdsResp, data)        
     }
 
-    parseSearchAvail(resp) {
-        let result=searchAvailParser({data:resp});
+    parseSearchAvail(resp, data) {
+        let result=searchAvailParser({data:resp},data);
         return result;
     }
 
@@ -98,8 +98,8 @@ class AlteaCommander extends flightCommander
         return resp;
     }
 
-    async fareRetrieve(data, ignored=true){        
-        let totPax=data.model.adult+data.model.child;
+    async fareRetrieveOld(data, ignored=true){        
+        let totPax=parseInt(data.model.adult)+parseInt(data.model.child);
         let oke = await this.addFlight(data.departure, totPax)
         if(oke && !data.model.oneway)
         {
@@ -117,43 +117,115 @@ class AlteaCommander extends flightCommander
         // let gdsResp=await 
     }
 
+    async checkFare(flights,totPax){
+        let total=0
+        for (let ii = 0; ii < flights.flightData.data.length; ii++) {
+            const flight = flights.flightData.data[ii];
+            // let ddate = this.changeDateFormat(flight.flightData.ddate)
+            // let fnum=flight.flightNum.replaceAll(' ','')
+            // let str = 'SS'+fnum+flight.code+ddate+flight.flightData.from+flight.flightData.to+totPax
+            let str= 'FQD'+flight.flightData.from+flight.flightData.to+'/IO/R,U'+(ii==0?',AT':'');
+            let r = await this.execute({command:str})
+            // cek oke gk ? kalo gk throw exception
+            let fr=parseFareRetrieveFQQ(r, totPax, flight.code);       
+            // console.log(str, fr);    
+            total += fr + (ii>0?((0.1*fr)+5000):0);            
+        }
+        return total;
+    }
+
+    async fareRetrieve(data){        
+        
+        let totPax=parseInt(data.model.adult)+parseInt(data.model.child);
+        // let gdsResp=await 
+        let fare = [];
+        let amount = await this.checkFare(data.departure, totPax)
+        
+        if(amount && !data.model.oneway)
+        {
+            amount += await this.checkFare(data.return, totPax)
+        }
+
+        return {
+            fare:[{
+                amount:amount,
+                airlineCode:'GA'
+            }],
+            insurance:0
+        }
+    }
+
     parseName(name)
     {
         let t=name.split(' ')
         let lname=t[t.length - 1]
         t.splice(t.length - 1, 1)
-        return lname+'/'+t.join('');
+        // if(t.length==0);
+        let fname=t.join('');
+        return lname+'/'+(fname.trim()==''?lname:fname);
     }
 
     changeBoD(date){
         return (moment(date,'DD-MMM-YYYY').format('DDMMMYY')).toUpperCase()
     }
 
-    async addBooking(data)
+    async doBooking(data)
     {
-        data.pax.adult.forEach(async (adult) => {
+        for (let ii = 0; ii < data.pax.adult.length; ii++) {
+            const adult = data.pax.adult[ii];
             let str =( 'NM1'+this.parseName(adult.firstname)+adult.title).toUpperCase()
             if(adult.infant)
             {
                 str+='(INF/'+(this.parseName(adult.infant.firstname)).replaceAll('/','')+'/'+this.changeBoD(adult.infant.dob)+')'
             }
-            // let resp = await this.execute({command:str});
-            console.log(str, adult);            
-        });
-        data.pax.child.forEach(async(child) => {
+            let resp = await this.execute({command:str});
+            console.log(str, adult);                        
+        }
+
+        for (let ii = 0; ii < data.pax.child.length; ii++) {
+            const child = data.pax.child[ii];
             let str =( 'NM1'+this.parseName(child.firstname)+child.title).toUpperCase()+'(CHD/'+this.changeBoD(child.dob)+')'            
-            // let resp = await this.execute({command:str});
-            console.log(str, child);
-        });
+            let resp = await this.execute({command:str});
+            console.log(str, child);            
+        }
+
+        let cmd = 'APM '+data.contact.phone1;
+        await this.execute({command:cmd});
+        if(data.contact.phone2)
+        {
+            cmd = 'APH '+data.contact+phone2;
+            await this.execute({command:cmd})
+        }
+        if(data.contact.mails){
+            for (let i = 0; i < data.contact.mails.length; i++) {
+                const email = data.contact.mails[i];
+                cmd = 'APE-'+email
+                await this.execute({command:cmd})
+            }
+        }
+        cmd = 'APE-nextgtravel.office.guntur@gmail.com'
+        await this.execute({command:cmd})
+        let resp = await this.execute({command:'TKOK'})
+        let rf = await this.execute({command:'RF '+data.contact.firstname})
+        let er = await this.execute({command:'ER'});
+        return parseBookCode(er);
+    }
+
+    async retrieve(bookCode){
+        let bookData=await this.execute({command:'RT'+bookCode.pnrid})
+        let fareData=await this.execute({command:'FXP/R,U'})
+        await this.execute({command:'IG'})
+
+        return parseRetrieve(bookData, fareData)
     }
     
 
     async booking(data){
         let pdata=this.processInfant(data.data);
-        console.log(pdata);        
-        await this.addBooking(pdata)
-        return pdata;
-        let fr = await this.fareRetrieve(data.airfare, false)   
+        let fr = await this.fareRetrieveOld(data.airfare, false)   
+        let resp = await this.doBooking(pdata)
+        console.log(pdata, resp);        
+        return await this.retrieve({pnrid:resp});
     }
 
     processInfant(paxData)
@@ -174,15 +246,30 @@ class AlteaCommander extends flightCommander
 
     async execute(data){
         let cmd=this.createParams(data.command.toUpperCase())
-        console.log(cmd);    
+        console.log(data);    
         let params='data='+encodeURI(JSON.stringify(cmd));
         // console.log(params);
         let resp =(await this.post(this.page, params)).html;
         let json = JSON.parse(resp);
-        let strResp=json.model.output.crypticResponse.response;
-        strResp=strResp.replaceAll('\r\n','\n').replaceAll('\n\r','\n').replaceAll('\r','\n')
-        validateResp(strResp, data.command.toUpperCase())
-        return  strResp;
+        let strResp='';
+        console.log('execute resp ' ,json);
+        if(json.model.output.crypticResponse)
+        {
+            strResp=json.model.output.crypticResponse.response;
+            strResp=strResp.replaceAll('\r\n','\n').replaceAll('\r','\n').replaceAll('\n\n','\n')
+            try {
+                validateResp(strResp, data.command.toUpperCase())                        
+            } catch (error) {
+                this.execute({command:'IG'});
+                throw error;
+            }
+            return  strResp;
+        }
+        else 
+        {
+            strResp=json.model.output.crypticError.message;
+            throw new Error(strResp);            
+        }
     }    
 }
 

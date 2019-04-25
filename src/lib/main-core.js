@@ -124,6 +124,13 @@ router.post('/booking',async (req,res)=>{
     res.json(resp);
 })
 
+router.post('/retrieve',async (req,res)=>{
+    let resp = await handleRequest(req, async(req, session)=>{
+        return await session.commander.retrieve(req.body)
+    })
+    res.json(resp);
+})
+
 router.post('/executeCmd',async(req, res)=>{
     let resp = await handleRequest(req, async(req, session)=>{
         return await session.commander.execute(req.body);                           
