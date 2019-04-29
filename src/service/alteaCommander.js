@@ -108,7 +108,7 @@ class AlteaCommander extends flightCommander
 
         if(oke)
         {
-            let res = await this.execute({command:'FXA'})
+            // let res = await this.execute({command:'FXA'})
             if(ignored) await this.execute({command:'IG'})
             console.log(res);            
             return fareRetrieveParser(res)
@@ -161,7 +161,7 @@ class AlteaCommander extends flightCommander
         let lname=t[t.length - 1]
         t.splice(t.length - 1, 1)
         // if(t.length==0);
-        let fname=t.join('');
+        let fname=t.join(' ');
         return lname+'/'+(fname.trim()==''?lname:fname);
     }
 
@@ -228,6 +228,13 @@ class AlteaCommander extends flightCommander
         return await this.retrieve({pnrid:resp});
     }
 
+    async canceled(data){
+        await this.execute({command:'RT'+data.pnrid})
+        await this.execute({command:'XI'})
+        await this.execute({command:'IG'})
+        return {}
+    }
+
     processInfant(paxData)
     {
         if(paxData.pax.infant.length>0)
@@ -241,7 +248,14 @@ class AlteaCommander extends flightCommander
     }
 
     async issued(data){
-        
+        await this.execute({command:'RT'+data.pnrid})
+        await this.execute({command:'FXP/R,U'})
+        await this.execute({command:'FP CASH'})
+        await this.execute({command:'RFNG'})
+        let issued=await this.execute({command:'TTP/RT'})
+        await this.execute({command:'IG'})
+        console.log(issued,'issued response');
+        return await this.retrieve(data)          
     }
 
     async execute(data){

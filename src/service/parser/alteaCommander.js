@@ -1,3 +1,4 @@
+import moment from 'moment';
 function parseSearchAvailResult(resp,data)
 {
     let result={departure:[], return:[]};
@@ -195,7 +196,7 @@ function parseFareRetrieve(data){
 
 }
 
-const failedResp=['INVALID', 'CHECK', 'NOT AVAILABLE', 'WAITLIST CLOSED', 'NOT ALLOWED', 'DOES NOT ALLOW','RJT CHRONOLOGICAL ORDER']
+const failedResp=['INVALID', 'CHECK', 'NOT AVAILABLE', 'WAITLIST CLOSED', 'NOT ALLOWED', 'DOES NOT ALLOW','RJT CHRONOLOGICAL ORDER','NEED RECEIVED FROM']
 
 function validateCmd(resp, cmd) {
     for (let ii = 0; ii < failedResp.length; ii++) {
@@ -309,15 +310,15 @@ function parseRetrieve(bookData, fareData, airline='GA') {
                 name:arr[2].substr(3,17).trim().replace('*',''),
                 type:'ADT',
                 numPax:1,
-                fare:parseInt(arr[10].substr(4,8).trim()),
+                fare:parseInt(arr[7].substr(4,8).trim()),
                 tax:getTax(arr),
-                total:parseInt(arr[15].substr(4,8).trim())
+                total:parseInt(arr[12].substr(4,8).trim())
             }
 
             function getTax(arr) {
-                let t = parseInt(arr[12].substr(4,8).trim())
-                t += parseInt(arr[13].substr(4,8).trim())
-                t += parseInt(arr[14].substr(4,8).trim())
+                let t = parseInt(arr[9].substr(4,8).trim())
+                t += parseInt(arr[10].substr(4,8).trim())
+                t += parseInt(arr[11].substr(4,8).trim())
                 return t
             }
             result.push(obj)
@@ -340,12 +341,12 @@ function parseRetrieve(bookData, fareData, airline='GA') {
         others.booking_code = l1.booking_code
         others.office = l1.office
         others.booking_time = l1.bookTime
-        others.status = getStatus(others)
-        function getStatus(data) {
-            let status=data.flight_detail[0].status;
-            if(status.indexOf('HK')>=0)return 'BOOKED'
-            return 'TICKETED';
-        }
+        others.status = 'BOOKED';//getStatus(others)
+        // function getStatus(data) {
+        //     let status=data.flight_detail[0].status;
+        //     if(status.indexOf('HK')>=0)return 'BOOKED'
+        //     return 'TICKETED';
+        // }
         function parseLine1(str) {
             let arr = str.split(' ');
             let rarr=[];
@@ -372,14 +373,27 @@ function parseRetrieve(bookData, fareData, airline='GA') {
                 if(str.substr(0,4).trim().indexOf('.')>=0)return checkPax(str)
                 if(str.substr(4,2).trim().length==1)return checkFlight(str)
                 if(str.substr(4,2).trim()=='AP')return checkContact(str)
+                if(str.substr(4,2).trim()=='FA')return checkTicket(str)
                 if(str.substr(4,3).trim()=='OPC')return checkTimelimit(str)
                 if(str.substr(4,3).trim()=='SSR')return {type:'ssr', data:str.substr(7, str.length - 8).trim()}
             
                 return false;
             }
+
+            function checkTicket(str) {
+                let temp=str.substr(7,str.length - 7)
+                let a = temp.split('/');
+                let tnumber=a[0].replace('PAX','').trim()
+                let code = a[1];
+                return {type:'ticket', data:{number:tnumber, code:code}}
+            }
             
             function checkTimelimit(str) {
-                return {type:'timelimit', data:str.substr(8,10)}
+                let tl = str.substr(8,10);
+                let ta = tl.split(':');
+                tl = ta[0]+moment().format('YYYY')+' '+tl[1]
+                let timelimit = moment(tl,'DDMMMYYYY HHmm').format('DD-MMM-YY, HH:mm')
+                return {type:'timelimit', data:timelimit}
             }
             
             function checkContact(str) {
@@ -451,11 +465,32 @@ function parseRetrieve(bookData, fareData, airline='GA') {
                         obj.type='ADT';
                     }
                     let name = rpax.split('(');
-                    obj.name = name[0];
+                    let n = extractName(name[0]);
+                    obj.name = n.name
+                    obj.title = n.title
                     paxes.push(obj)
                     if(hasInfant)paxes.push(infObj)
                 }
-                // console.log(paxes);        
+                // console.log(paxes);      
+                function extractName(str) {
+                    let title = ['MR', 'MRS', 'MS','MISS', 'MSTR']
+                    let res = {title:'',name:''}
+                    for (let i = 0; i < title.length; i++) {
+                        const t = title[i];
+                        if(str.indexOf(t)>=0)
+                        {
+                            if((str.toUpperCase().substr(str.length - t.length, t.length) == t)){
+                                res.title = t
+                                let ns = str.split('/')
+                                
+                                res.name = ns[1].replace(t , '')+' '+ns[0]
+                                break;
+                            }
+                        }
+                    }
+                    return res
+                }
+                
                 return {type:'pax', data:paxes};
             }
 
@@ -465,7 +500,8 @@ function parseRetrieve(bookData, fareData, airline='GA') {
                 contact:{
                     phone:[],
                     email:[]
-                }
+                },
+                tickets:[]
             }
             for (let ii = 0; ii < res.length; ii++) {
                 const arr = res[ii];
@@ -479,6 +515,7 @@ function parseRetrieve(bookData, fareData, airline='GA') {
                 if(arr.type=='phone')result.contact.phone.push({type:arr.code, number:arr.data})
                 if(arr.type=='email')result.contact.email.push(arr.data)
                 if(arr.type=='timelimit')result.timelimit=arr.data
+                if(arr.type=='ticket')result.tickets.push(arr.data)
             }
             // return res
             return result;
@@ -506,6 +543,14 @@ function parseRetrieve(bookData, fareData, airline='GA') {
     pnr.airline_code=airline
     pnr.publish={fare:f.publish, insurance:0}
     pnr.ntsa={fare:f.ntsa, insurance:0}
+    pnr.status = pnr.tickets.length>0?'TICKETED':'BOOKED'
+    if(pnr.tickets.length>0){
+        for (let ii = 0; ii < pnr.pax.length; ii++) {
+            const pax = pnr.pax[ii];
+            pax.ticket = pnr.tickets[ii].number
+            pax.tcode = pnr.tickets[ii].code
+        }        
+    }
     // pnr.log
     // pnr.status = getStatus(pnr)
     return pnr 

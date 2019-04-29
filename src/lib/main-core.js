@@ -131,6 +131,20 @@ router.post('/retrieve',async (req,res)=>{
     res.json(resp);
 })
 
+router.post('/issued',async(req,res)=>{
+    let resp = await handleRequest(req, async(req, session)=>{
+        return await session.commander.issued(req.body)
+    })
+    res.json(resp);
+})
+
+router.post('/canceled',async(req,res)=>{
+    let resp = await handleRequest(req, async(req, session)=>{
+        return await session.commander.canceled(req.body)
+    })
+    res.json(resp);
+})
+
 router.post('/executeCmd',async(req, res)=>{
     let resp = await handleRequest(req, async(req, session)=>{
         return await session.commander.execute(req.body);                           
