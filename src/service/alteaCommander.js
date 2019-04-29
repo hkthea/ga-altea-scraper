@@ -110,8 +110,8 @@ class AlteaCommander extends flightCommander
         {
             // let res = await this.execute({command:'FXA'})
             if(ignored) await this.execute({command:'IG'})
-            console.log(res);            
-            return fareRetrieveParser(res)
+            // console.log(res);            
+            // return fareRetrieveParser(res)
         }
         return {}
         // let gdsResp=await 
