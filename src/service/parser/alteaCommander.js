@@ -391,8 +391,10 @@ function parseRetrieve(bookData, fareData, airline='GA') {
             function checkTimelimit(str) {
                 let tl = str.substr(8,10);
                 let ta = tl.split(':');
-                tl = ta[0]+moment().format('YYYY')+' '+tl[1]
+                tl = ta[0]+moment().format('YYYY')+' '+ta[1]
+                
                 let timelimit = moment(tl,'DDMMMYYYY HHmm').format('DD-MMM-YY, HH:mm')
+                console.log(str, tl, timelimit, ta);
                 return {type:'timelimit', data:timelimit}
             }
             
