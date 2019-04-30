@@ -196,7 +196,7 @@ function parseFareRetrieve(data){
 
 }
 
-const failedResp=['INVALID', 'CHECK', 'NOT AVAILABLE', 'WAITLIST CLOSED', 'NOT ALLOWED', 'DOES NOT ALLOW','RJT CHRONOLOGICAL ORDER','NEED RECEIVED FROM', 'NEED ITINERARY']
+const failedResp=['INVALID', 'CHECK', 'NOT AVAILABLE', 'WAITLIST CLOSED', 'NOT ALLOWED', 'DOES NOT ALLOW','RJT CHRONOLOGICAL ORDER','NEED RECEIVED FROM', 'NEED ITINERARY','NO AVAILABILITY']
 
 function validateCmd(resp, cmd) {
     for (let ii = 0; ii < failedResp.length; ii++) {
