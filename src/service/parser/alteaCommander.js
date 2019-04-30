@@ -305,20 +305,34 @@ function parseRetrieve(bookData, fareData, airline='GA') {
         function parseRespPax(arr) {
             console.log(arr, 'pax');
             let result=[];
+            function parseFareComponent(list) {
+                let result=[];
+                for (let ii = 0; ii < list.length; ii++) {
+                    const l = list[ii];
+                    if(l.substr(0,3)=='IDR')
+                    {
+                        result.push(l);
+                    }
+                }
+                return result;
+            }
+            let fc=parseFareComponent(arr);
+            console.log(fc);
+            
             let obj={
                 num:parseInt(arr[2].substr(0,2)),
                 name:arr[2].substr(3,17).trim().replace('*',''),
                 type:'ADT',
                 numPax:1,
-                fare:parseInt(arr[7].substr(4,8).trim()),
+                fare:parseInt(fc[0].substr(4,8).trim()),
                 tax:getTax(arr),
-                total:parseInt(arr[12].substr(4,8).trim())
+                total:parseInt(fc[4].substr(4,8).trim())
             }
 
             function getTax(arr) {
-                let t = parseInt(arr[9].substr(4,8).trim())
-                t += parseInt(arr[10].substr(4,8).trim())
-                t += parseInt(arr[11].substr(4,8).trim())
+                let t = parseInt(fc[1].substr(4,8).trim())
+                t += parseInt(fc[2].substr(4,8).trim())
+                t += parseInt(fc[3].substr(4,8).trim())
                 return t
             }
             result.push(obj)
