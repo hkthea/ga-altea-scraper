@@ -195,7 +195,7 @@ class AlteaCommander extends flightCommander
         await this.execute({command:cmd});
         if(data.contact.phone2)
         {
-            cmd = 'APH '+data.contact+phone2;
+            cmd = 'APH '+data.contact.phone2;
             await this.execute({command:cmd})
         }
         if(data.contact.mails){
