@@ -196,7 +196,7 @@ function parseFareRetrieve(data){
 
 }
 
-const failedResp=['INVALID', 'CHECK', 'NOT AVAILABLE', 'WAITLIST CLOSED', 'NOT ALLOWED', 'DOES NOT ALLOW','RJT CHRONOLOGICAL ORDER','NEED RECEIVED FROM']
+const failedResp=['INVALID', 'CHECK', 'NOT AVAILABLE', 'WAITLIST CLOSED', 'NOT ALLOWED', 'DOES NOT ALLOW','RJT CHRONOLOGICAL ORDER','NEED RECEIVED FROM', 'NEED ITINERARY']
 
 function validateCmd(resp, cmd) {
     for (let ii = 0; ii < failedResp.length; ii++) {
@@ -206,7 +206,7 @@ function validateCmd(resp, cmd) {
             const rp = rarr[iii];
             if(rp.toUpperCase().indexOf(fail)>=0)
             {
-                let message=rp + ' ON CMD '+cmd;
+                let message=rp;//+ ' ON CMD '+cmd;
                 throw new Error(message);
             }
         }
@@ -517,7 +517,8 @@ function parseRetrieve(bookData, fareData, airline='GA') {
                     phone:[],
                     email:[]
                 },
-                tickets:[]
+                tickets:[],
+                flight_detail:[]
             }
             for (let ii = 0; ii < res.length; ii++) {
                 const arr = res[ii];
@@ -559,13 +560,20 @@ function parseRetrieve(bookData, fareData, airline='GA') {
     pnr.airline_code=airline
     pnr.publish={fare:f.publish, insurance:0}
     pnr.ntsa={fare:f.ntsa, insurance:0}
-    pnr.status = pnr.tickets.length>0?'TICKETED':'BOOKED'
-    if(pnr.tickets.length>0){
-        for (let ii = 0; ii < pnr.pax.length; ii++) {
-            const pax = pnr.pax[ii];
-            pax.ticket = pnr.tickets[ii].number
-            pax.tcode = pnr.tickets[ii].code
-        }        
+    if(pnr.flight_detail.length>0)
+    {
+        pnr.status = pnr.tickets.length>0?'TICKETED':'BOOKED'
+        if(pnr.tickets.length>0){
+            for (let ii = 0; ii < pnr.pax.length; ii++) {
+                const pax = pnr.pax[ii];
+                pax.ticket = pnr.tickets[ii].number
+                pax.tcode = pnr.tickets[ii].code
+            }        
+        }
+    }
+    else
+    {
+        pnr.status = 'CANCELED'
     }
     // pnr.log
     // pnr.status = getStatus(pnr)
