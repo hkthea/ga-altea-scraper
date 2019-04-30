@@ -74,6 +74,7 @@ class AlteaCommander extends flightCommander
     }
     
     async searchAvail(data){
+        await this.execute({command:'IG'})
         let  gdsResp= await this.cmdAN(data);
         return this.parseSearchAvail(gdsResp, data)        
     }
@@ -136,6 +137,7 @@ class AlteaCommander extends flightCommander
 
     async fareRetrieve(data){        
         
+        await this.execute({command:'IG'})
         let totPax=parseInt(data.model.adult)+parseInt(data.model.child);
         // let gdsResp=await 
         let fare = [];
@@ -212,6 +214,7 @@ class AlteaCommander extends flightCommander
     }
 
     async retrieve(bookCode){
+        await this.execute({command:'IG'})
         let bookData=await this.execute({command:'RT'+bookCode.pnrid})
         let fareData=await this.execute({command:'FXP/R,U'})
         await this.execute({command:'IG'})
@@ -222,6 +225,7 @@ class AlteaCommander extends flightCommander
 
     async booking(data){
         let pdata=this.processInfant(data.data);
+        await this.execute({command:'IG'})
         let fr = await this.fareRetrieveOld(data.airfare, false)   
         let resp = await this.doBooking(pdata)
         console.log(pdata, resp);        
@@ -229,6 +233,7 @@ class AlteaCommander extends flightCommander
     }
 
     async canceled(data){
+        await this.execute({command:'IG'})
         await this.execute({command:'RT'+data.pnrid})
         await this.execute({command:'XI'})
         await this.execute({command:'IG'})
@@ -248,6 +253,7 @@ class AlteaCommander extends flightCommander
     }
 
     async issued(data){
+        await this.execute({command:'IG'})
         await this.execute({command:'RT'+data.pnrid})
         await this.execute({command:'FXP/R,U'})
         await this.execute({command:'FP CASH'})

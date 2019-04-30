@@ -60,7 +60,7 @@ function popSession() {
 }
 
 function pushSession(session) {
-    SESSION_LIST.push(session)
+    SESSION_LIST.unshift(session)
 }
 
 function getTotal() {
