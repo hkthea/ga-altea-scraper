@@ -347,7 +347,8 @@ function parseRetrieve(bookData, fareData, airline='GA') {
     
     function parseTST(resp) {
         let arr = resp.split('\n')
-
+        console.log(arr);
+        
         // console.log(parseLine1(arr[1]));
         let l1 = parseLine1(arr[1]);
         let others = parseOthers(arr)
@@ -384,6 +385,8 @@ function parseRetrieve(bookData, fareData, airline='GA') {
                 if(lineData)res.push(lineData)
             }
             function checkLine(str) {
+                console.log(str.substr(0,4).trim(), str.substr(0,4).trim().indexOf('.'));
+                
                 if(str.substr(0,4).trim().indexOf('.')>=0)return checkPax(str)
                 if(str.substr(4,2).trim().length==1)return checkFlight(str)
                 if(str.substr(4,2).trim()=='AP')return checkContact(str)
@@ -446,16 +449,21 @@ function parseRetrieve(bookData, fareData, airline='GA') {
                 }}
             }
             
+            
             function checkPax(str) {
+                
                 let pxs=str.split('.');
+                // console.log(pxs, pxs.length);
                 let paxes = [];
                 for (let ii = 0; ii < pxs.length; ii++) {
                     const pax = pxs[ii];
                     let obj={};
                     let infObj={}
                     let hasInfant=false;
+                    
                     if(pax.trim().length<3)continue
-                    let rpax=pax.trim().split(' ')[0];
+                    
+                    let rpax=pax;//.trim().split(' ')[0];
                     if(rpax.indexOf('(')>=0)
                     {
                         let x=rpax;
@@ -481,35 +489,41 @@ function parseRetrieve(bookData, fareData, airline='GA') {
                         obj.type='ADT';
                     }
                     let name = rpax.split('(');
+                    // console.log(name);
+                    
                     let n = extractName(name[0]);
                     obj.name = n.name
                     obj.title = n.title
                     paxes.push(obj)
                     if(hasInfant)paxes.push(infObj)
                 }
-                // console.log(paxes);      
                 function extractName(str) {
                     let title = ['MR', 'MRS', 'MS','MISS', 'MSTR']
                     let res = {title:'',name:''}
+                    
                     for (let i = 0; i < title.length; i++) {
                         const t = title[i];
+                        
                         if(str.indexOf(t)>=0)
                         {
-                            if((str.toUpperCase().substr(str.length - t.length, t.length) == t)){
+                            let ts = str.replace(new RegExp('[0-9]'),'').toUpperCase().trim()
+                            let ttls = ts.substr(ts.length - t.length, t.length)
+                            if((ttls == t)){
                                 res.title = t
-                                let ns = str.split('/')
+                                let ns = ts.split('/')
                                 
                                 res.name = ns[1].replace(t , '')+' '+ns[0]
                                 break;
                             }
                         }
                     }
+                    
                     return res
                 }
+                console.log(paxes);
                 
                 return {type:'pax', data:paxes};
             }
-
             let result = {
                 pax:[],
                 flight_detail:[],

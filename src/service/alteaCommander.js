@@ -63,6 +63,12 @@ class AlteaCommander extends flightCommander
         let gds = JSON.parse(resp);
         
         let gdsResp=gds.model.output.crypticResponse.response;
+        try {
+            validateResp(gdsResp, str)                        
+        } catch (error) {
+            this.execute({command:'IG'});
+            throw error;
+        }
         console.log(str, gdsResp);        
         result.push(gdsResp)
         if(gdsResp.toUpperCase().indexOf('NO MORE LATER')>=0)
