@@ -38,7 +38,7 @@ function parseSearchAvailResult(resp,data)
         });
     
         ret.forEach(d => {
-            let fobj=parseText(d, data)
+            let fobj=parseText(d, data, true)
             result.return.push(fobj)
         });
         
@@ -100,7 +100,7 @@ function parseSearchAvailResult(resp,data)
         return index;
     }
         
-    function parseText(text, data) {
+    function parseText(text, data, isReturn=false) {
         
         let obj={}
         const moment=require('moment')
@@ -113,7 +113,8 @@ function parseSearchAvailResult(resp,data)
         obj.dtime=moment(text.substr(48,4).trim(),'HHmm').format('HH:mm')
         obj.atime=moment(text.substr(56,4).trim(),'HHmm').format('HH:mm')
         let flagOffDate=text.substr(52,2).trim();
-        obj.ddate=moment(data.departure,'DD-MMM-YYYY').add(flagOffDate,'days').format('DD-MMM-YYYY')
+        let ddate=(isReturn)?data.return:data.departure
+        obj.ddate=moment(ddate,'DD-MMM-YYYY').add(flagOffDate,'days').format('DD-MMM-YYYY')
         obj.flightType=text.substr(62,6).trim()
         obj.eta = text.substr(74,5).trim()
         obj.type='sumlocal'
