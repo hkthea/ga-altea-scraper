@@ -1,4 +1,4 @@
-import moment from 'moment';
+const moment = require('moment');
 function parseSearchAvailResult(resp,data)
 {
     let result={departure:[], return:[]};
@@ -33,13 +33,29 @@ function parseSearchAvailResult(resp,data)
         let {dep, ret} = filterFlights(fls);
         dep.forEach(d => {
             let fobj=parseText(d, data)
-            
-            result.departure.push(fobj)
+            if(!fobj.classOnly){
+                // result.return.push(fobj)
+                result.departure.push(fobj)
+            }
+            else{
+                let prev = result.departure.pop()
+                prev.classGroup = [...prev.classGroup, ...fobj.classGroup]
+                result.departure.push(prev)
+            }
         });
     
         ret.forEach(d => {
             let fobj=parseText(d, data, true)
-            result.return.push(fobj)
+            if(!fobj.classOnly){
+                result.return.push(fobj)
+            }
+            else{
+                let prev = result.return.pop()
+                prev.classGroup = [...prev.classGroup, ...fobj.classGroup]
+                result.return.push(prev)
+            }
+            // console.log(result.return);
+            
         });
         
     });
@@ -103,7 +119,15 @@ function parseSearchAvailResult(resp,data)
     function parseText(text, data, isReturn=false) {
         
         let obj={}
-        const moment=require('moment')
+        let classesStr = text.substr(13,21)
+        obj.classGroup = parseClass(classesStr);
+        obj.classOnly = false;
+        if(classesStr.trim() == text.trim()){
+            // console.log('Classes sama');
+            obj.classOnly = true;
+            return obj;
+        }
+        // const moment=require('moment')
         obj.number = text.substr(0,2).trim();
         obj.code = text.substr(5,2).trim()
         obj.pict='/pic/'+obj.code.toLowerCase()+'.png'
@@ -118,7 +142,8 @@ function parseSearchAvailResult(resp,data)
         obj.flightType=text.substr(62,6).trim()
         obj.eta = text.substr(74,5).trim()
         obj.type='sumlocal'
-        obj.classGroup=parseClass(text.substr(13,21))
+
+        // obj.classGroup=parseClass(classesStr)
         return obj
     }
     
