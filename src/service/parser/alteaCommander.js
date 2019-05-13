@@ -22,6 +22,7 @@ function parseSearchAvailResult(resp,data)
             if(fl.trim()=='>')continue;
             if(fl.substr(0,2).toLowerCase()=='no')continue;
             if(fl.substr(0,2).toLowerCase()=='ck')continue;
+            if(fl.substr(0,2).toLowerCase()=='us')continue;
             temp.push(fl);
         }
         return {dep:dep, ret:ret};
