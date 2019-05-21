@@ -34,26 +34,30 @@ function parseSearchAvailResult(resp,data)
         let {dep, ret} = filterFlights(fls);
         dep.forEach(d => {
             let fobj=parseText(d, data)
-            if(!fobj.classOnly){
-                // result.return.push(fobj)
-                result.departure.push(fobj)
-            }
-            else{
-                let prev = result.departure.pop()
-                prev.classGroup = [...prev.classGroup, ...fobj.classGroup]
-                result.departure.push(prev)
+            if(fobj!==false){
+                if(!fobj.classOnly){
+                    // result.return.push(fobj)
+                    result.departure.push(fobj)
+                }
+                else{
+                    let prev = result.departure.pop()
+                    prev.classGroup = [...prev.classGroup, ...fobj.classGroup]
+                    result.departure.push(prev)
+                }
             }
         });
     
         ret.forEach(d => {
             let fobj=parseText(d, data, true)
-            if(!fobj.classOnly){
-                result.return.push(fobj)
-            }
-            else{
-                let prev = result.return.pop()
-                prev.classGroup = [...prev.classGroup, ...fobj.classGroup]
-                result.return.push(prev)
+            if(fobj!==false){
+                if(!fobj.classOnly){
+                    result.return.push(fobj)
+                }
+                else{
+                    let prev = result.return.pop()
+                    prev.classGroup = [...prev.classGroup, ...fobj.classGroup]
+                    result.return.push(prev)
+                }
             }
             // console.log(result.return);
             
@@ -133,7 +137,7 @@ function parseSearchAvailResult(resp,data)
         obj.code = text.substr(5,2).trim()
         obj.pict='/pic/'+obj.code.toLowerCase()+'.png'
         obj.flightNum = obj.code+' '+text.substr(7,5).trim()
-        if(obj.flightNum.length===5)continue;
+        if(obj.flightNum.length===5)return false;
         obj.from = text.substr(35,3).trim()
         obj.to = text.substr(41,3).trim()
         obj.dtime=moment(text.substr(48,4).trim(),'HHmm').format('HH:mm')
