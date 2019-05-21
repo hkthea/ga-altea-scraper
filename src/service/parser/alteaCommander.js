@@ -132,7 +132,8 @@ function parseSearchAvailResult(resp,data)
         obj.number = text.substr(0,2).trim();
         obj.code = text.substr(5,2).trim()
         obj.pict='/pic/'+obj.code.toLowerCase()+'.png'
-        obj.flightNum = obj.code+' '+text.substr(7,4).trim()
+        obj.flightNum = obj.code+' '+text.substr(7,5).trim()
+        if(obj.flightNum.length===5)continue;
         obj.from = text.substr(35,3).trim()
         obj.to = text.substr(41,3).trim()
         obj.dtime=moment(text.substr(48,4).trim(),'HHmm').format('HH:mm')
