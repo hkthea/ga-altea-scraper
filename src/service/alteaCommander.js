@@ -245,7 +245,7 @@ class AlteaCommander extends flightCommander
         u.splice(0,2);
         u.splice(u.length-1,1);
         let v = this.removeDuplicate(t, u);
-        return head.join('\n')+v.join('\n')+tail;
+        return head.join('\n')+'\n'+v.join('\n')+tail;
     }
 
     removeDuplicate(t,u){
@@ -263,6 +263,7 @@ class AlteaCommander extends flightCommander
         // let bookData=await this.execute({command:'RT'+bookCode.pnrid})
         let bookData=await this.doRetrieve(bookCode);
         // let bookData
+        // console.log(bookData);        
         let fareData=await this.execute({command:'FXP/R,U'})
         await this.execute({command:'IG'})
 
