@@ -219,9 +219,50 @@ class AlteaCommander extends flightCommander
         return parseBookCode(er);
     }
 
+    async doRetrieve(bookCode){
+        let bookData=await this.execute({command:'RT'+bookCode.pnrid})        
+        let comp = bookData;
+        for (let ii = 0; ii < 5; ii++) {
+            let temp = await this.execute({command:'MD'});
+            if(comp==temp){
+                return bookData;
+            }
+            else{
+                comp = temp;
+                bookData=this.combineBookData(bookData, temp);
+            }
+        }
+        return bookData;
+    }
+
+    combineBookData(bookData, nextBookData){
+        let t = bookData.split('\n');
+        let u = nextBookData.split('\n');
+        let head = [t[0],t[1]];
+        let tail = t[t.length-1];
+        t.splice(0,2)
+        t.splice(t.length-1,1);
+        u.splice(0,2);
+        u.splice(u.length-1,1);
+        let v = this.removeDuplicate(t, u);
+        return head.join('\n')+v.join('\n')+tail;
+    }
+
+    removeDuplicate(t,u){
+        for (let ii = 0; ii < u.length; ii++) {
+            const e = u[ii];
+            if(t.indexOf(e)<0){
+                t.push(e);
+            }
+        }
+        return t;
+    }
+
     async retrieve(bookCode){
         await this.execute({command:'IG'})
-        let bookData=await this.execute({command:'RT'+bookCode.pnrid})
+        // let bookData=await this.execute({command:'RT'+bookCode.pnrid})
+        let bookData=await this.doRetrieve(bookCode);
+        // let bookData
         let fareData=await this.execute({command:'FXP/R,U'})
         await this.execute({command:'IG'})
 
