@@ -308,8 +308,10 @@ class AlteaCommander extends flightCommander
         await this.execute({command:'RFNG'})
         let issued=await this.execute({command:'TTP/RT'})
         await this.execute({command:'IG'})
-        console.log(issued,'issued response');
-        return await this.retrieve(data)          
+        console.log(JSON.stringify(issued),'issued response');
+        let rdata = await this.retrieve(data)          
+        if(rdata.status.toUpperCase()=='BOOKED') throw new Error('Issued Failed, Please try Again!');
+        return rdata;
     }
 
     async execute(data){
