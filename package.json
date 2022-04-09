@@ -14,7 +14,7 @@
     "imap-simple": "^4.3.0",
     "isomorphic-fetch": "^2.2.1",
     "isomorphic-fetch-cookie": "^1.0.0",
-    "moment": "^2.24.0",
+    "moment": "^2.29.2",
     "node-fetch": "^2.3.0",
     "node-libcurl": "^1.3.3",
     "puppeteer": "^1.14.0-next.1554765238660",
